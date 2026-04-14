@@ -85,3 +85,7 @@ Format:
 ```
 
 If no issues found, report: "Code review passed. Build green, tests green, no issues found."
+
+## Performance Review
+
+For performance-sensitive code (photo processing, widget timelines, background tasks), load the additional checklist from [performance.md](performance.md).

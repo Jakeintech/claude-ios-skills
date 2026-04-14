@@ -82,3 +82,18 @@ Use `.bouncy` animation for morphing transitions.
 - [ ] GlassEffectContainer for grouped glass elements
 - [ ] Glass adapts to Reduce Transparency setting
 - [ ] Tint used for meaning, not decoration
+
+### Deep Accessibility Audit
+
+- [ ] VoiceOver navigation follows logical reading order (not visual layout order)
+- [ ] Related elements grouped with `accessibilityElement(children: .combine)` or `.contain`
+- [ ] Custom actions for complex interactions (`accessibilityAction`)
+- [ ] Announcements for dynamic content changes (`UIAccessibility.post(notification:)`)
+- [ ] Accessibility Inspector passes (run: Xcode > Open Developer Tool > Accessibility Inspector)
+- [ ] Color blindness safe: test protanopia, deuteranopia, tritanopia (Simulator > Settings > Accessibility > Display > Color Filters)
+- [ ] Reduced Motion: all animations gated behind `UIAccessibility.isReduceMotionEnabled` or `@Environment(\.accessibilityReduceMotion)`
+- [ ] Reduced Transparency: glass effects degrade to solid backgrounds when enabled
+- [ ] Minimum text size: no text below 11pt, all text respects `.dynamicTypeSize` environment
+- [ ] Switch Control: all interactive elements reachable via switch scanning
+- [ ] Voice Control: all buttons and controls have discoverable names
+- [ ] Guided Access: app functions correctly with restricted areas

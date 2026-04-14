@@ -2,25 +2,40 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILLS_DIR="$HOME/.claude/skills/ios-dev"
+SKILLS_BASE="$HOME/.claude/skills"
 CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 
 echo "=== claude-ios-skills installer (19 skills) ==="
 echo ""
 
-# Step 1: Symlink skills
+# Step 1: Symlink each skill individually
 echo "1/4 Installing skills..."
-if [ -L "$SKILLS_DIR" ]; then
-    echo "  Removing existing symlink at $SKILLS_DIR"
-    rm "$SKILLS_DIR"
-elif [ -d "$SKILLS_DIR" ]; then
-    echo "  ERROR: $SKILLS_DIR exists and is not a symlink. Remove it manually."
-    exit 1
+mkdir -p "$SKILLS_BASE"
+
+SKILL_COUNT=0
+for skill_dir in "$SCRIPT_DIR/skills"/*/; do
+    skill_name=$(basename "$skill_dir")
+    target="$SKILLS_BASE/$skill_name"
+
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        echo "  WARNING: $target exists and is not a symlink — skipping"
+        continue
+    fi
+
+    ln -s "$skill_dir" "$target"
+    SKILL_COUNT=$((SKILL_COUNT + 1))
+done
+
+# Clean up old monolithic symlink if it exists
+OLD_SYMLINK="$SKILLS_BASE/ios-dev"
+if [ -L "$OLD_SYMLINK" ]; then
+    rm "$OLD_SYMLINK"
+    echo "  Removed old ios-dev symlink"
 fi
 
-mkdir -p "$(dirname "$SKILLS_DIR")"
-ln -s "$SCRIPT_DIR" "$SKILLS_DIR"
-echo "  Symlinked $SCRIPT_DIR -> $SKILLS_DIR"
+echo "  Installed $SKILL_COUNT skills to $SKILLS_BASE/"
 
 # Step 2: Append iOS standards to global CLAUDE.md
 echo "2/4 Updating global CLAUDE.md..."
@@ -60,7 +75,7 @@ fi
 echo ""
 echo "=== Installation complete ==="
 echo ""
-echo "19 skills installed at: $SKILLS_DIR"
+echo "$SKILL_COUNT skills installed at: $SKILLS_BASE/ios-*"
 echo "MCP servers: XcodeBuildMCP, xcode (mcpbridge), ios-simulator"
 echo ""
 echo "CONCEIVE:"

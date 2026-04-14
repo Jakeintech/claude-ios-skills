@@ -1,61 +1,158 @@
 # claude-ios-skills
 
-A Claude Code skill plugin for iOS development. Encodes best-in-class Swift/SwiftUI patterns, autonomous design review, and production-grade project scaffolding.
+A [Claude Code](https://claude.ai/code) skill plugin for production-grade iOS development. Encodes best-in-class Swift/SwiftUI patterns, autonomous design review against Apple HIG, and full project scaffolding with a single command.
 
-## What's Included
+## Features
 
 ### 5 Skills
-| Skill | Invocation | Purpose |
-|-------|-----------|---------|
-| `ios-scaffold` | `/ios-scaffold MyApp` | Create a new iOS project with proper structure |
-| `ios-design-review` | Auto or `/ios-design-review` | Autonomous UI critique against Apple HIG |
-| `ios-tdd` | Auto | Test-driven development with Swift Testing |
-| `ios-code-review` | `/ios-code-review` | Review code against iOS best practices |
-| `ios-iterate` | `/ios-iterate "feedback"` | Rapid design iteration loop |
 
-### 3 MCP Servers (installed globally)
-- **XcodeBuildMCP** — Build, test, debug, deploy (59 tools)
-- **Apple Xcode MCP** — Native Xcode integration via xcrun mcpbridge
-- **iOS Simulator MCP** — Screenshots, UI interaction, device management
+| Skill | Invocation | What It Does |
+|-------|-----------|-------------|
+| **ios-scaffold** | `/ios-scaffold MyApp` | Create a new iOS project with xcodegen, SwiftUI, Swift Testing, App Groups, brand book, and SDLC workflow |
+| **ios-design-review** | Auto or `/ios-design-review` | Autonomous UI critique against Apple HIG, Liquid Glass, SF Symbols, accessibility, and your brand book |
+| **ios-tdd** | Auto | Test-driven development with Swift Testing — write test, implement, verify, refactor |
+| **ios-code-review** | `/ios-code-review` | Review code for memory leaks, concurrency safety, `@Observable` patterns, and xcodegen consistency |
+| **ios-iterate** | `/ios-iterate "feedback"` | Rapid design iteration — screenshot, apply feedback, rebuild, auto-review, show before/after |
+
+### 3 MCP Servers
+
+Installed globally so every project has access:
+
+- **[XcodeBuildMCP](https://github.com/getsentry/XcodeBuildMCP)** — Build, test, LLDB debug, deploy (59 tools)
+- **[Apple Xcode MCP](https://developer.apple.com/)** — Native Xcode 26.3+ integration via `xcrun mcpbridge`
+- **[iOS Simulator MCP](https://github.com/whitesmith/ios-simulator-mcp)** — Screenshots, UI hierarchy, tap/swipe, device management
 
 ### Global iOS Standards
-Appended to `~/.claude/CLAUDE.md` — non-negotiable conventions for all iOS projects.
+
+Appended to `~/.claude/CLAUDE.md` — conventions enforced across all iOS projects:
+
+- `@Observable` (never `ObservableObject`), Swift 6, strict concurrency
+- iOS 26 Liquid Glass for navigation layer only, SF Symbols exclusively
+- Swift Testing framework, xcodegen project management
+- Apple HIG compliance, accessibility from day one
+
+## The Design Review Loop
+
+The flagship workflow. Claude builds your UI, screenshots it, critiques it against Apple's standards, and fixes issues autonomously:
+
+```
+You: "Build the settings screen"
+ |
+ +--> Claude implements the SwiftUI view
+ +--> XcodeBuildMCP compiles and deploys to simulator
+ +--> iOS Simulator MCP takes a screenshot
+ +--> ios-design-review agent critiques against:
+ |      - Apple HIG (navigation, typography, layout, touch targets)
+ |      - Liquid Glass (correct variants, no glass-on-glass)
+ |      - SF Symbols (no emojis, correct weight/scale)
+ |      - Brand book (your app's design identity)
+ |      - Accessibility (contrast, VoiceOver, Dynamic Type)
+ |
+ +--> Low-impact screen? Auto-fix and re-review (up to 3x)
+ +--> High-impact screen? Show you before/after for approval
+```
 
 ## Install
 
 ```bash
+git clone https://github.com/Jakeintech/claude-ios-skills.git ~/Documents/GitHub/claude-ios-skills
+cd ~/Documents/GitHub/claude-ios-skills
 ./install.sh
 ```
 
 This will:
 1. Symlink skills to `~/.claude/skills/ios-dev/`
 2. Append iOS standards to `~/.claude/CLAUDE.md`
-3. Install 3 MCP servers at user scope
+3. Install 3 MCP servers at user scope (available to all projects)
 
-## Requirements
+### Requirements
+
 - macOS with Xcode 26.3+
-- Node.js (for XcodeBuildMCP and iOS Simulator MCP via npx)
-- xcodegen (`brew install xcodegen`)
-- Claude Code CLI
+- Node.js (for MCP servers via npx)
+- [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
+- [Claude Code](https://claude.ai/code) CLI
+
+## Quick Start
+
+After installing, start a new project:
+
+```
+/ios-scaffold MyNewApp
+```
+
+This creates a complete project with:
+
+```
+MyNewApp/
+├── CLAUDE.md                          # Project-specific build commands & architecture
+├── project.yml                        # xcodegen spec (4 targets)
+├── .mcp.json                          # Project MCP server stub
+├── docs/product-vision/
+│   ├── 00-product-bounds.md           # Brand book template
+│   └── SDLC-WORKFLOW.md              # Quality gates & branch strategy
+├── MyNewApp/
+│   ├── App/AppState.swift             # @Observable central state
+│   └── Views/
+├── Shared/
+│   ├── Models/
+│   ├── Services/
+│   ├── Settings/UserSettings.swift    # App Group UserDefaults
+│   ├── Data/
+│   └── Rendering/
+├── MyNewAppWidget/                    # Widget extension
+├── MyNewAppTests/                     # Swift Testing
+└── MyNewAppUITests/
+```
+
+Then iterate on the UI:
+
+```
+/ios-iterate "make the navigation bar use Liquid Glass"
+/ios-design-review
+/ios-code-review
+```
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Layer 4: Per-Project Templates                 │
-│  Brand book, roadmap, project CLAUDE.md         │
-├─────────────────────────────────────────────────┤
-│  Layer 3: MCP Servers (3 global)                │
-│  XcodeBuildMCP, Apple Xcode MCP, iOS Simulator  │
-├─────────────────────────────────────────────────┤
-│  Layer 2: Skill Plugin (5 global skills)        │
-│  scaffold, design-review, tdd, code-review,     │
-│  iterate                                        │
-├─────────────────────────────────────────────────┤
-│  Layer 1: Global CLAUDE.md                      │
-│  iOS standards, Swift conventions, Apple HIG    │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│  Layer 4: Per-Project (generated by ios-scaffold)    │
+│  Brand book, roadmap, project CLAUDE.md              │
+├──────────────────────────────────────────────────────┤
+│  Layer 3: MCP Servers (3 global)                     │
+│  XcodeBuildMCP + Apple Xcode MCP + iOS Simulator MCP │
+├──────────────────────────────────────────────────────┤
+│  Layer 2: Skills (5 global)                          │
+│  scaffold, design-review, tdd, code-review, iterate  │
+├──────────────────────────────────────────────────────┤
+│  Layer 1: Global CLAUDE.md                           │
+│  iOS standards, Swift conventions, Apple HIG         │
+└──────────────────────────────────────────────────────┘
 ```
+
+| Layer | Purpose | Scope | Changes |
+|-------|---------|-------|---------|
+| Global CLAUDE.md | Non-negotiable iOS conventions | All projects | Rarely (yearly, when Apple ships new patterns) |
+| Skills | Development workflows | All projects | Occasionally (as workflow improves) |
+| MCP Servers | Build, test, screenshot capabilities | All projects | Rarely (version bumps) |
+| Per-Project | App identity, brand, roadmap | One app | Frequently (as app evolves) |
+
+## iOS Standards Enforced
+
+These are appended to your global `~/.claude/CLAUDE.md` and apply everywhere:
+
+| Category | Standard |
+|----------|----------|
+| **Project** | xcodegen, iOS 18+, SwiftUI lifecycle, `Shared/` directory, App Groups |
+| **State** | `@Observable`, `@MainActor`, async/await, no Combine |
+| **Design** | Liquid Glass (navigation only), SF Symbols, 44pt touch targets, HIG |
+| **Testing** | Swift Testing (`@Test`, `#expect`), TDD cycle, tags |
+| **Accessibility** | VoiceOver, Dynamic Type, 4.5:1 contrast, from day one |
+| **Code** | Swift 6, strict concurrency, no external dependencies by default |
+
+## Contributing
+
+PRs welcome. Skills are markdown files in `skills/` — easy to read, modify, and extend.
 
 ## License
 

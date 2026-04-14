@@ -140,7 +140,11 @@ Ask user to review and approve.
 
 ## Phase 5: Handoff
 
-On approval, generate these files in the current directory:
+On approval, automatically flow through the next steps — no manual invocation needed.
+
+### 5.1 Generate PRD Documents
+
+Save these files in a temporary staging area (current directory):
 
 1. `docs/product-vision/00-product-bounds.md` — pre-filled from Section A
 2. `docs/product-vision/SDLC-WORKFLOW.md` — pre-filled with epics from Section D
@@ -148,7 +152,33 @@ On approval, generate these files in the current directory:
 4. `docs/product-vision/widget-spec.md` — widget requirements for ios-widget (if applicable)
 5. `docs/product-vision/framework-requirements.md` — Section B + E for ios-scaffold to consume
 
-Report to user:
-- "PRD complete. Run `/ios-scaffold {AppName}` to create the project."
-- List which skills to run after scaffold: /ios-data-model, /ios-widget (if applicable)
-- Summarize the epic build order
+### 5.2 Auto-invoke /ios-scaffold
+
+Extract the app name from the idea (use the North Star or ask user to confirm the name).
+Then invoke the ios-scaffold skill:
+
+```
+Skill: ios-scaffold
+Args: {AppName}
+```
+
+This creates the full project directory with the PRD documents moved into place.
+
+### 5.3 Auto-invoke domain skills
+
+After scaffold completes, automatically invoke the next skills in sequence:
+
+1. **If data model was specified:** invoke `/ios-data-model` — it reads `docs/product-vision/data-model-spec.md` and generates the SwiftData schema
+2. **If widgets were identified:** invoke `/ios-widget` with the widget description from the PRD
+3. **If CI was discussed:** suggest `/ios-ci` but don't auto-invoke (one-time setup, user may want to configure)
+
+### 5.4 Report
+
+After all auto-invocations complete, report:
+- Project created at `./{AppName}/`
+- What was auto-generated (scaffold, data model, widgets)
+- Epic build order — what to work on first
+- Next manual steps: "Start building Epic 1. Use `/ios-iterate` and `/ios-code-review` as you go."
+- Ship checklist: "When ready, run `/ios-app-icon` → `/ios-screenshots` → `/ios-store-listing` → `/ios-privacy` → `/ios-testflight` → `/ios-submit`"
+
+The goal: user types one command with their idea, and walks away with a fully scaffolded project including data models and widgets ready to build on.

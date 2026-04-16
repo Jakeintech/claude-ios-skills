@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{app_name}} — {{tagline}}</title>
+    <meta name="description" content="{{meta_description}}">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "SF Pro Text", system-ui, sans-serif;
+            background: {{palette_bg}};
+            color: {{palette_ink}};
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 20px;
+        }
+        .container { max-width: 720px; width: 100%; }
+        header { text-align: center; margin-bottom: 56px; }
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        .tagline {
+            font-size: 22px;
+            color: {{palette_accent}};
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .hero {
+            font-size: 18px;
+            color: {{palette_muted}};
+            margin-bottom: 48px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-bottom: 64px;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: {{palette_accent}};
+            font-variant-numeric: tabular-nums;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: {{palette_muted}};
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 64px;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .feature h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: {{palette_ink}};
+        }
+        .feature p {
+            font-size: 15px;
+            color: {{palette_muted}};
+            line-height: 1.6;
+        }
+        .cta {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+        .cta a {
+            display: inline-block;
+            background: {{palette_accent}};
+            color: {{palette_bg}};
+            padding: 14px 28px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.15s ease;
+        }
+        .cta a:hover { transform: translateY(-1px); }
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 32px;
+            text-align: center;
+            width: 100%;
+        }
+        footer a {
+            color: {{palette_muted}};
+            text-decoration: none;
+            margin: 0 16px;
+            font-size: 14px;
+        }
+        footer a:hover { color: {{palette_ink}}; }
+        .copyright {
+            margin-top: 24px;
+            color: {{palette_muted}};
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{app_name}}</h1>
+            <p class="tagline">{{tagline}}</p>
+        </header>
+
+        <p class="hero">{{hero}}</p>
+
+        <div class="stats">
+            {{stats_html}}
+        </div>
+
+        <div class="features">
+            {{features_html}}
+        </div>
+
+        <div class="cta">
+            <a href="{{cta_url}}">{{cta_text}}</a>
+        </div>
+    </div>
+
+    <footer>
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="terms-of-service.html">Terms of Service</a>
+        <a href="support.html">Support</a>
+        <div class="copyright">&copy; {{year}} {{developer}}. All rights reserved.</div>
+    </footer>
+</body>
+</html>

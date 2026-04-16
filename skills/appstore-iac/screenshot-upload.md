@@ -155,6 +155,13 @@ PATCH /v1/appScreenshotSets/{setId}/relationships/appScreenshots
 
 Order matches sorted filename order from the local directory.
 
+**⚠ The reorder endpoint returns `204 No Content`** with an empty response body. A JSON-parsing API helper must check `response.text.strip()` before `json.loads`, otherwise it raises `JSONDecodeError`. Standard pattern:
+
+```python
+text = resp.read().decode()
+return resp.status, (json.loads(text) if text.strip() else {})
+```
+
 ## Constraints
 
 - Formats: `.jpeg`, `.jpg`, `.png`

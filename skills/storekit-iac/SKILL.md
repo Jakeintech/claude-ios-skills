@@ -12,8 +12,11 @@ Manage App Store Connect in-app purchases declaratively from `appstore/products.
 ## Reference
 
 Load these before starting:
-- [API Reference](api-reference.md) — App Store Connect API endpoints, JWT auth, and field-level gotchas
+- [Shared ASC API](../shared/asc-api.md) — JWT auth, error handling, rate limiting, common gotchas
+- [API Reference](api-reference.md) — Subscription-specific endpoints
 - [StoreKit Format](storekit-format.md) — .storekit configuration file JSON schema
+
+**Note:** For pushing subscriptions to App Store Connect, use `/appstore-iac apply` instead — it includes subscription sync as part of the full push. This skill's `apply` mode still works standalone but `appstore-iac` is the unified command.
 
 ## Modes
 

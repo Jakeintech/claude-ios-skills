@@ -47,7 +47,9 @@ import json
 info = json.load(open("appstore/app-info.json"))
 assert info.get("app_id"), "app_id missing"
 assert info.get("name"), "name missing"
-assert info.get("categories") and len(info["categories"]) >= 1, "categories missing"
+# Support both flat keys (primaryCategory/secondaryCategory) and legacy categories[] array
+primary_cat = info.get("primaryCategory") or (info.get("categories") or [None])[0]
+assert primary_cat, "primaryCategory (or categories[0]) missing"
 ```
 
 If `app-info.json` lacks `marketing_url` or `support_url`, warn the user: those fields in `listing.json` will be empty until `/ios-site init` runs.
@@ -115,6 +117,10 @@ def synthesize(copy, aso, app_info, year=2026, developer="Jake Williams"):
     # Subtitle: aso variant if valid, else fall back
     subtitle = aso["subtitle_variants"][0] if aso.get("subtitle_variants") and len(aso["subtitle_variants"][0]) <= 30 else app_info.get("subtitle", "")
 
+    # Support both flat keys and legacy array; flat keys are canonical going forward
+    primary_cat = app_info.get("primaryCategory") or (app_info.get("categories") or [None])[0]
+    secondary_cat = app_info.get("secondaryCategory") or (app_info.get("categories") or [None, None])[1]
+
     listing = {
         "name": app_info["name"],  # never auto-rename
         "subtitle": subtitle,
@@ -125,8 +131,8 @@ def synthesize(copy, aso, app_info, year=2026, developer="Jake Williams"):
         "supportUrl": app_info.get("support_url", ""),
         "marketingUrl": app_info.get("marketing_url", ""),
         "copyright": f"{year} {developer}",
-        "primaryCategory": app_info["categories"][0],
-        "secondaryCategory": app_info["categories"][1] if len(app_info["categories"]) > 1 else None,
+        "primaryCategory": primary_cat,
+        "secondaryCategory": secondary_cat,
     }
     return listing, warnings, truncations, copy.get("tone_violations", []), aso.get("title_variants", [])
 ```

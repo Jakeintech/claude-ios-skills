@@ -45,10 +45,35 @@ All read-only inputs. The skill never modifies them.
 
 ### Validation
 
-Before any API call, validate all required files and field lengths:
+Before any API call, validate required generators have run, then check field lengths.
+
+**Implicit generator invocation** — if listing.json or site URLs are missing, offer to run their generators first:
 
 ```bash
-# Check files exist
+MISSING_GENERATORS=()
+
+if [ ! -f "appstore/listing.json" ]; then
+  MISSING_GENERATORS+=("listing (run /ios-store-listing)")
+fi
+
+if ! grep -q '"marketing_url"' "appstore/app-info.json" 2>/dev/null; then
+  MISSING_GENERATORS+=("site (run /ios-site init)")
+fi
+
+if [ ${#MISSING_GENERATORS[@]} -gt 0 ]; then
+  echo "Missing generator outputs:"
+  for g in "${MISSING_GENERATORS[@]}"; do echo "  - $g"; done
+  echo ""
+  read -p "Run these now? [Y/n] " CONFIRM
+  if [ "$CONFIRM" = "n" ] || [ "$CONFIRM" = "N" ]; then
+    echo "Aborting. Run the generators manually and try again."
+    exit 1
+  fi
+  # Delegate in order: listing first (site landing can reuse listing hero)
+  # The skill invokes /ios-store-listing then /ios-site init interactively.
+fi
+
+# After generators ran (or if they already existed), verify all required files
 for f in app-info.json listing.json products.yml age-rating.json review-notes.json export-compliance.json; do
   test -f "appstore/$f" || echo "MISSING: appstore/$f — run the appropriate generator skill"
 done

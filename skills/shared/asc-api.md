@@ -90,6 +90,11 @@ These were discovered through live API failures. Do not skip.
 12. **Age rating: no create, only PATCH.** Auto-created with appInfo. Use `ageRatingOverrideV2` (not deprecated `ageRatingOverride`).
 13. **Name: 30 chars max. Subtitle: 30 chars max.** Server-enforced, not in OpenAPI spec.
 14. **`promotionalText` is the only field updatable without a new version submission.**
+15. **`whatsNew` cannot be edited on v1.** Returns 409 `STATE_ERROR "Attribute 'whatsNew' cannot be edited at this time"`. Skills must detect v1 and omit `whatsNew` from the version-localization PATCH.
+16. **`usesNonExemptEncryption` is NOT an attribute on `appStoreVersions` anymore.** Attempts return 409 `ENTITY_ERROR.ATTRIBUTE.UNKNOWN`. Encryption declaration is now handled via the attached Build resource (or `Info.plist`'s `ITSAppUsesNonExemptEncryption` which the build carries up automatically). Set on the build, not the version.
+17. **Age rating: all attributes are required on every PATCH.** Partial updates return 409 REQUIRED per missing field. Required bool fields now include `ageAssurance` (added mid-2025); enum fields include `gunsOrOtherWeapons` (added 2026).
+18. **Age rating has no `GET_INSTANCE`.** `GET /v1/ageRatingDeclarations/{id}` → 403. Must fetch via `GET /v1/appInfos/{id}/ageRatingDeclaration` (relationship fetch) to see current state.
+19. **`contactPhone` format enforced.** Must start with `+` and country code (e.g., `+1 702 555 1234`). Empty strings or free-form text return 409 INVALID.
 
 ## Character Limits
 

@@ -149,6 +149,7 @@ PATCH /v1/ageRatingDeclarations/{ageRatingId}
     "type": "ageRatingDeclarations",
     "id": "{ageRatingId}",
     "attributes": {
+      "ageRatingOverrideV2": "NONE",
       "violenceCartoonOrFantasy": "NONE",
       "violenceRealistic": "NONE",
       "violenceRealisticProlongedGraphicOrSadistic": "NONE",
@@ -160,6 +161,7 @@ PATCH /v1/ageRatingDeclarations/{ageRatingId}
       "gamblingSimulated": "NONE",
       "sexualContentOrNudity": "NONE",
       "sexualContentGraphicAndNudity": "NONE",
+      "gunsOrOtherWeapons": "NONE",
       "gambling": false,
       "unrestrictedWebAccess": false,
       "contests": "NONE",
@@ -168,7 +170,8 @@ PATCH /v1/ageRatingDeclarations/{ageRatingId}
       "lootBox": false,
       "messagingAndChat": false,
       "parentalControls": false,
-      "userGeneratedContent": false
+      "userGeneratedContent": false,
+      "ageAssurance": false
     }
   }
 }
@@ -176,22 +179,34 @@ PATCH /v1/ageRatingDeclarations/{ageRatingId}
 
 **Frequency/intensity enum values:** `NONE`, `INFREQUENT_OR_MILD`, `FREQUENT_OR_INTENSE`
 
+**⚠ All attributes are required on every PATCH.** ASC returns `ENTITY_ERROR.ATTRIBUTE.REQUIRED` for any omitted field. The skill must always send the complete attribute set, filling `NONE` / `false` for categories the app doesn't trigger.
+
+**⚠ `GET` is not allowed on `ageRatingDeclarations` resource instances** (403 FORBIDDEN_ERROR: "does not allow GET_INSTANCE. Allowed operation is: UPDATE"). The only way to see current state is via `GET /v1/appInfos/{id}/ageRatingDeclaration` as a relationship fetch.
+
+**⚠ `gunsOrOtherWeapons` was added in 2026** — older skill docs omit it. Missing it returns 409 REQUIRED error.
+
 **Boolean fields:** `gambling`, `unrestrictedWebAccess`, `advertising`, `lootBox`, `messagingAndChat`, `parentalControls`, `ageAssurance`, `userGeneratedContent`, `healthOrWellnessTopics`
 
 **Mapping from age-rating.json:**
-| age-rating.json key | API attribute |
-|---|---|
-| `cartoonOrFantasyViolence` | `violenceCartoonOrFantasy` |
-| `realisticViolence` | `violenceRealistic` |
-| `profanityOrCrudeHumor` | `profanityOrCrudeHumor` |
-| `matureOrSuggestiveThemes` | `matureOrSuggestiveThemes` |
-| `horrorOrFearThemes` | `horrorOrFearThemes` |
-| `medicalTreatmentInformation` | `medicalOrTreatmentInformation` |
-| `alcoholTobaccoDrugUse` | `alcoholTobaccoOrDrugUseOrReferences` |
-| `simulatedGambling` | `gamblingSimulated` |
-| `sexualContentOrNudity` | `sexualContentOrNudity` |
-| `unrestrictedWebAccess` | `unrestrictedWebAccess` |
-| `gamblingWithRealCurrency` | `gambling` |
+| age-rating.json key | API attribute | Type |
+|---|---|---|
+| `cartoonOrFantasyViolence` | `violenceCartoonOrFantasy` | enum |
+| `realisticViolence` | `violenceRealistic` | enum |
+| (no key — always NONE unless user declares) | `violenceRealisticProlongedGraphicOrSadistic` | enum |
+| `profanityOrCrudeHumor` | `profanityOrCrudeHumor` | enum |
+| `matureOrSuggestiveThemes` | `matureOrSuggestiveThemes` | enum |
+| `horrorOrFearThemes` | `horrorOrFearThemes` | enum |
+| `medicalTreatmentInformation` | `medicalOrTreatmentInformation` | enum |
+| `alcoholTobaccoDrugUse` | `alcoholTobaccoOrDrugUseOrReferences` | enum |
+| `simulatedGambling` | `gamblingSimulated` | enum |
+| `sexualContentOrNudity` | `sexualContentOrNudity` | enum |
+| (no key — always NONE unless declared) | `sexualContentGraphicAndNudity` | enum |
+| `gunsOrOtherWeapons` (new 2026) | `gunsOrOtherWeapons` | enum |
+| `unrestrictedWebAccess` | `unrestrictedWebAccess` | bool |
+| `gamblingWithRealCurrency` | `gambling` | bool |
+| (no key — default NONE) | `contests` | enum |
+| (always true for health/fitness apps) | `healthOrWellnessTopics` | bool |
+| (no key — default false) | `advertising`, `lootBox`, `messagingAndChat`, `parentalControls`, `userGeneratedContent` | bool |
 
 Use `ageRatingOverrideV2` (not deprecated `ageRatingOverride`). Values: `NONE`, `NINE_PLUS`, `THIRTEEN_PLUS`, `SIXTEEN_PLUS`, `EIGHTEEN_PLUS`, `UNRATED`.
 
@@ -243,6 +258,8 @@ PATCH /v1/appStoreReviewDetails/{reviewDetailId}
 Same attributes, no relationship needed. `notes` max 4000 chars. `demoAccountRequired` is a boolean.
 
 **Do NOT confuse with `betaAppReviewDetail`** (TestFlight) — different resource at `/v1/apps/{id}/betaAppReviewDetail`.
+
+**⚠ `contactPhone` format enforced server-side.** Must start with `+` followed by country code and digits (example from Apple error: `+44 844 209 0611`). Empty string or free-form text returns 409 `ENTITY_ERROR.ATTRIBUTE.INVALID`. If `review-notes.json.contactPhone` is empty, the skill must prompt the user for one before POST/PATCH — do NOT invent or placeholder a real phone number.
 
 ---
 

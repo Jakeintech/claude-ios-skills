@@ -5,12 +5,12 @@ description: Use when writing, changing, building or testing Swift/SwiftUI code 
 
 # Apple Platform Code
 
-Two Xcodes, two jobs. Docs and new-device testing come from **Xcode-beta**; anything that ships comes from **Xcode.app** (latest release). The App Store rejects beta-built binaries, so a release command that doesn't name its Xcode is a bug.
+Two Xcodes, two jobs. Everything you build, test and ship (including iPhone Duo) uses **Xcode.app**, the latest release. **Xcode-beta** serves the newest docs (Xcode MCP) and previews of the next SDK. The App Store rejects beta-built binaries, so a release command that doesn't name its Xcode is a bug.
 
 | Path | Use for |
 |---|---|
-| `/Applications/Xcode.app` | Release builds, archives, TestFlight/App Store, merge gate, CI parity |
-| `/Applications/Xcode-beta.app` | Docs (Xcode MCP), iPhone Duo / new-device simulators, preview of next SDK |
+| `/Applications/Xcode.app` | Builds, tests, iPhone Duo, archives, TestFlight/App Store, merge gate |
+| `/Applications/Xcode-beta.app` | Docs (Xcode MCP is pinned to it), preview of the next SDK's APIs |
 
 ## Recipe
 
@@ -29,16 +29,17 @@ Two Xcodes, two jobs. Docs and new-device testing come from **Xcode-beta**; anyt
      -configuration Release -destination 'generic/platform=iOS' -archivePath build/<S>.xcarchive archive
    ```
    If `/Applications/Xcode.app` is missing, say the release build is **unverified**. Never fall back to the beta.
-6. **Duo / new devices on the beta:**
+6. **iPhone Duo.** Xcode.app has a dedicated Duo runtime (`iOS-27-2-iPhone19-4`). Pin `OS=`, because an "iPhone Duo" simulator can also exist on the beta runtime:
    ```sh
-   export DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer
-   xcodebuild -scheme <S> -destination 'platform=iOS Simulator,name=iPhone Duo' build test
+   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -scheme <S> \
+     -destination 'platform=iOS Simulator,name=iPhone Duo,OS=27.2' build test
+   xcrun simctl io <udid> screenshot --display=primary duo.png   # Duo has 2 screens; --display is required
    ```
-   Code must pass on both Xcodes before merge.
+   Use the beta only to try an API that's newer than Xcode.app. Before merging, that code must still build on Xcode.app.
 
 ## Simulators
 
-Device Hub (`DeviceHub.app`, bundled inside Xcode-beta) is the GUI. There's no agent API, so manage simulators with `simctl` under the matching `DEVELOPER_DIR`:
+Device Hub (`DeviceHub.app`, bundled inside Xcode) is the GUI. There's no agent API, so manage simulators with `simctl` under the matching `DEVELOPER_DIR`:
 
 ```sh
 xcrun simctl list devicetypes | grep -i duo

@@ -12,7 +12,7 @@ These rules apply to all iOS projects. Non-negotiable.
 ### Xcode Toolchain
 - Before writing or building Apple-platform code, invoke the `apple-platform-code` skill. It covers docs lookup, the Xcode MCP, release vs beta, and simulators.
 - Every release, archive, TestFlight or merge-gate command starts with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. `xcode-select` may point at the beta, and the App Store rejects beta-built binaries.
-- iPhone Duo and new-device tests use `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer`.
+- iPhone Duo tests also use Xcode.app (`-destination 'platform=iOS Simulator,name=iPhone Duo,OS=27.2'`). Xcode-beta is only for previewing next-SDK APIs.
 - Check new APIs with Xcode MCP `DocumentationSearch` (call `XcodeOpenWorkspace` first) before writing them from memory.
 
 ### SwiftUI & State

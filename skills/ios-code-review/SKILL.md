@@ -47,6 +47,11 @@ Review every changed Swift file for these issues:
 - Proper use of `@State` vs `@Environment` vs `@Binding`
 - `.task` instead of `.onAppear` for async work
 
+**Apple's Current Guidance (when the `xcode-integration` plugin is installed):**
+- For changed SwiftUI code, check against `xcode-integration:swiftui-specialist` (best practices, performance) and `xcode-integration:swiftui-whats-new-27` (deprecations, replacement APIs). For App Intents, use `xcode-integration:app-intents-specialist`.
+- For any API you're unsure about, query Xcode MCP `DocumentationSearch` and confirm availability against the target's deployment target. Flag new-SDK APIs used without `if #available` / `@available` guards.
+- Use Xcode MCP `XcodeRefreshCodeIssuesInFile` on each changed file to surface compiler warnings and deprecations.
+
 **xcodegen Consistency:**
 - If new files were added, verify they're in directories covered by `project.yml` sources
 - If new targets or frameworks needed, `project.yml` must be updated

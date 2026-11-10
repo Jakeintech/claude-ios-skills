@@ -15,7 +15,8 @@ Load the full design checklist from [reference.md](reference.md) before reviewin
 ## Process
 
 ### 1. Build & Screenshot
-- Build the app using XcodeBuildMCP tools (or `xcodebuild build`)
+- Preferred: the `xcode-integration:device-interaction` skill (Xcode MCP `DeviceInteractionStartWorkspaceSession` → `DeviceInteractionInstallAndRun` → `DeviceInteractionSynthesize`), which returns screenshots and the UI hierarchy. For a single SwiftUI view, Xcode MCP `RenderPreview` is faster.
+- Otherwise build the app using XcodeBuildMCP tools (or `xcodebuild build`)
 - Boot the simulator if not running
 - Launch the app on the simulator
 - Take a screenshot of the current screen
@@ -45,6 +46,8 @@ Review the screenshot and source code against these categories, in order:
 - Verify the screen fits within product bounds
 
 **Accessibility:**
+- If the `xcode-integration` plugin is installed, run Apple's three auditors on the changed views and fold their findings into this report: `xcode-integration:accessibility-voiceover-specialist`, `xcode-integration:accessibility-dynamic-type-specialist`, `xcode-integration:accessibility-sufficient-contrast-specialist`. They check against the App Store Accessibility Nutrition Label criteria.
+- Otherwise check manually:
 - VoiceOver labels on interactive elements
 - Dynamic Type support
 - 4.5:1 contrast ratio minimum

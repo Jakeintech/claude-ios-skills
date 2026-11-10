@@ -10,6 +10,8 @@ paths: "**/*.swift"
 
 When implementing any feature or fixing any bug in an iOS project, follow this TDD cycle.
 
+If the project still has XCTest tests, convert them with `xcode-integration:modernize-tests` (Apple's XCTest → Swift Testing migration skill) before adding new ones beside them.
+
 ## Framework: Swift Testing
 
 Use Swift Testing exclusively. Never XCTest.

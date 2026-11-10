@@ -9,6 +9,12 @@ These rules apply to all iOS projects. Non-negotiable.
 - App Groups (`group.com.<team>.shared`) for widget/extension data sharing via UserDefaults.
 - Swift 6 language mode. Strict concurrency checking enabled.
 
+### Xcode Toolchain
+- Before writing or building Apple-platform code, invoke the `apple-platform-code` skill. It covers docs lookup, the Xcode MCP, release vs beta, and simulators.
+- Every release, archive, TestFlight or merge-gate command starts with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. `xcode-select` may point at the beta, and the App Store rejects beta-built binaries.
+- iPhone Duo and new-device tests use `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer`.
+- Check new APIs with Xcode MCP `DocumentationSearch` (call `XcodeOpenWorkspace` first) before writing them from memory.
+
 ### SwiftUI & State
 - `@Observable` macro for all state objects. Never use `ObservableObject`/`@Published`.
 - Central `AppState` injected via `.environment()`. No singletons except `UserSettings.shared` (App Group requirement).

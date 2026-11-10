@@ -54,8 +54,8 @@ echo "3/4 Installing MCP servers..."
 echo "  Installing XcodeBuildMCP..."
 claude mcp add --scope user --transport stdio XcodeBuildMCP -- npx -y xcodebuildmcp@latest mcp 2>/dev/null || echo "  XcodeBuildMCP already configured or claude CLI not found"
 
-echo "  Installing Apple Xcode MCP..."
-claude mcp add --scope user --transport stdio xcode -- xcrun mcpbridge 2>/dev/null || echo "  Xcode MCP already configured or claude CLI not found"
+echo "  Installing Apple's xcode-integration plugin (skills + Xcode MCP)..."
+bash "$SCRIPT_DIR/scripts/sync-xcode-plugin.sh" || echo "  Skipped: needs Xcode 26.3+ with 'xcrun mcpbridge run-agent'"
 
 echo "  Installing iOS Simulator MCP..."
 claude mcp add --scope user --transport stdio ios-simulator -- npx -y ios-simulator-mcp@latest 2>/dev/null || echo "  iOS Simulator MCP already configured or claude CLI not found"

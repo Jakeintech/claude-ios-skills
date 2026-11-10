@@ -132,7 +132,9 @@ Report each finding with the file, line, and suggested replacement.
 
 If `$ARGUMENTS` contains locale codes (e.g., `es ja fr ar`):
 
-For each locale, add a localization block to every string in the catalog:
+**If the `xcode-integration` plugin is installed, use Apple's translator:** invoke `xcode-integration:translation-coordinator` with the locales. It runs the Xcode MCP `LocalizationPlanner` and writes through `StringCatalogRead`/`StringCatalogEdit`, so plural variants, device variants and state flags stay valid. Skip to Step 5 when it finishes.
+
+**Fallback (no plugin, or Xcode MCP unavailable):** for each locale, add a localization block to every string in the catalog:
 
 ```json
 "welcome_back": {

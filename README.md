@@ -56,6 +56,7 @@ The Platform Engineer autonomously identifies integrations you didn't ask for â€
 |-------|-----------|-------------|
 | **ios-testflight** | `/ios-testflight` | Archive, upload, manage beta groups/testers, collect feedback |
 | **ios-submit** | `/ios-submit` | 12-point pre-submission checklist, upload, submit, monitor review status |
+| **ios-release-playbook** | `/ios-release-playbook [setup\|release\|checklist]` | Day-one release setup and the whole "features done â†’ owner presses Submit" run, with battle-tested ASC/fastlane/screenshot/icon templates |
 
 ### Operate
 

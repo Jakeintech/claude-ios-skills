@@ -1,0 +1,37 @@
+# appstore/products.yml
+# Single source of truth for the app's in-app purchases (storekit-iac skill format).
+# Product ids must match the paywall code and the .storekit file. Change prices here first.
+
+app_id: "<ASC_APP_ID>"
+base_currency: USD
+
+availability:
+  strategy: all
+
+subscription_groups:
+  - name: "<App> Pro"
+    products:
+      - id: com.example.myapp.pro.yearly
+        duration: P1Y
+        base_price: 19.99
+        grace_period: P16D
+        introductory_offer:
+          type: free_trial
+          duration: P1W
+
+non_consumables:
+  - id: com.example.myapp.pro.lifetime
+    base_price: 49.99
+
+localizations:
+  en-US:
+    com.example.myapp.pro.yearly:
+      name: "<App> Pro, yearly"
+      description: "<55 chars max>"
+    com.example.myapp.pro.lifetime:
+      name: "<App> Pro, once"
+      description: "<55 chars max>"
+
+storekit_config:
+  enabled: true
+  output: MyApp/Resources/MyApp.storekit

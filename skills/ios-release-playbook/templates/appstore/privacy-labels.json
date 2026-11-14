@@ -1,0 +1,5 @@
+{
+  "label": "Precise Location: App Functionality, not linked to the user, not used for tracking",
+  "reasoning": "<Why each declared data type is (or is not) collected: backend? account? analytics/ads/crash SDKs? Which outside services get which data. Must match the privacy policy.>",
+  "set_in": "App Store Connect > App Privacy (website only; not in the public API)"
+}

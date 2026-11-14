@@ -1,0 +1,101 @@
+{
+  "_comment": "Source of truth for the App Store listing. Applied with appstore/asc/apply.rb (always run with --dry-run first). Copy follows docs/design/screens/AppStore.dc.html and Brand.dc.html. Never submits for review.",
+  "app": {
+    "contentRightsDeclaration": "USES_THIRD_PARTY_CONTENT  (or DOES_NOT_USE_THIRD_PARTY_CONTENT)",
+    "primaryLocale": "en-US"
+  },
+  "appInfo": {
+    "primaryCategory": "<PRIMARY_CATEGORY>",
+    "secondaryCategory": "<SECONDARY_CATEGORY>"
+  },
+  "appInfoLocalization": {
+    "en-US": {
+      "name": "<Brand>: <What it is>  (30 chars max)",
+      "subtitle": "<The outcome, 30 chars max>",
+      "privacyPolicyUrl": "https://<OWNER>.github.io/<APP>-site/privacy-policy.html"
+    }
+  },
+  "version": {
+    "versionString": "1.0.0",
+    "copyright": "<YEAR> <LEGAL NAME>",
+    "releaseType": "MANUAL"
+  },
+  "versionLocalization": {
+    "en-US": {
+      "description": "<Opening line: the outcome in one sentence.>\n\n<What you do, in 3 short paragraphs.>\n\nFREE\n• <feature>\n• <feature>\n\n<PRO NAME> (the same list as the paywall, word for word)\n• <feature>\n• <feature>\n\n<Privacy line: what stays on the device.>",
+      "keywords": "<comma,separated,no,spaces,100 chars,no words already in name or subtitle>",
+      "promotionalText": "<170 chars max; can change without a new version>",
+      "supportUrl": "https://<OWNER>.github.io/<APP>-site/support.html",
+      "marketingUrl": "https://<OWNER>.github.io/<APP>-site/"
+    }
+  },
+  "reviewDetail": {
+    "contactFirstName": "<FIRST>",
+    "contactLastName": "<LAST>",
+    "contactEmail": "<REVIEW_EMAIL>",
+    "contactPhone": "<+1 PHONE>",
+    "demoAccountRequired": false,
+    "notes": "No account or login is needed. <App> has no backend; data is stored on the device.\n\nHOW TO TEST\n1. <first run>\n2. <main screen and what it shows>\n3. <the core flow, with a concrete example to type>\n4. <where the result is saved>\n5. <secondary area>\n\nLOCATION\n<What it is used for, where it is asked, whether it leaves the device.>\n\nCAMERA\n<Optional? What it does. Nothing is recorded. Needs a real device; what the simulator shows instead.>\n\nNOTIFICATIONS\n<Which alerts, when the permission is asked.>\n\nCALENDAR\n<Write-only? Where: Screen > Button.>\n\nLIVE ACTIVITY\n<How to start it: Screen > Button (or the Shortcuts action). Not automatic unless it is.>\n\nPHOTOS\n<System picker: no library permission requested.>\n\nDATA SOURCES\n<Every outside service and exactly what is sent to it. No server of ours.>\n\nIN-APP PURCHASES\n<Product names and what each is. The same feature list as the paywall. Where the paywall opens; Restore Purchases is on the paywall.>"
+  },
+  "ageRating": {
+    "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+    "contests": "NONE",
+    "gamblingSimulated": "NONE",
+    "gunsOrOtherWeapons": "NONE",
+    "medicalOrTreatmentInformation": "NONE",
+    "profanityOrCrudeHumor": "NONE",
+    "sexualContentGraphicAndNudity": "NONE",
+    "sexualContentOrNudity": "NONE",
+    "horrorOrFearThemes": "NONE",
+    "matureOrSuggestiveThemes": "NONE",
+    "violenceCartoonOrFantasy": "NONE",
+    "violenceRealistic": "NONE",
+    "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+    "gambling": false,
+    "unrestrictedWebAccess": false,
+    "lootBox": false,
+    "messagingAndChat": false,
+    "parentalControls": false,
+    "ageAssurance": false,
+    "userGeneratedContent": false,
+    "advertising": false,
+    "healthOrWellnessTopics": false,
+    "socialMedia": false
+  },
+  "subscriptionGroup": {
+    "name": "<App> Pro",
+    "localizations": {
+      "en-US": {
+        "name": "<App> Pro",
+        "customAppName": null
+      }
+    }
+  },
+  "subscriptions": {
+    "com.example.myapp.pro.yearly": {
+      "reviewNote": "<Unlocks <App> Pro. Trial terms. Where to buy it in the app. The paywall feature list.>",
+      "localizations": {
+        "en-US": {
+          "name": "<App> Pro, yearly",
+          "description": "<55 chars max>"
+        }
+      }
+    }
+  },
+  "price": {
+    "baseTerritory": "USA",
+    "customerPrice": "0.0"
+  },
+  "privacyLabel": "<e.g. PRECISE_LOCATION_APP_FUNCTIONALITY_NOT_LINKED>",
+  "testflight": {
+    "betaAppLocalization": {
+      "en-US": {
+        "description": "<What the app does, 2 sentences.>",
+        "feedbackEmail": "<FEEDBACK_EMAIL>",
+        "marketingUrl": "https://<OWNER>.github.io/<APP>-site/",
+        "privacyPolicyUrl": "https://<OWNER>.github.io/<APP>-site/privacy-policy.html"
+      }
+    },
+    "whatToTest": "<What changed in this build and what to try, in order.>"
+  }
+}

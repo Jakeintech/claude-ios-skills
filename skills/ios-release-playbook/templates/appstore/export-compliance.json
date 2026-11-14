@@ -1,0 +1,4 @@
+{
+  "usesNonExemptEncryption": false,
+  "reason": "<Which networking the app uses (Apple frameworks, HTTPS). No custom encryption. ITSAppUsesNonExemptEncryption is false in Info.plist.>"
+}

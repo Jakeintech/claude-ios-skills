@@ -1,0 +1,17 @@
+{
+  "recommendedRating": "4+",
+  "categories": {
+    "cartoonOrFantasyViolence": "NONE",
+    "realisticViolence": "NONE",
+    "profanityOrCrudeHumor": "NONE",
+    "matureOrSuggestiveThemes": "NONE",
+    "horrorOrFearThemes": "NONE",
+    "medicalTreatmentInformation": "NONE",
+    "alcoholTobaccoDrugUse": "NONE",
+    "simulatedGambling": "NONE",
+    "sexualContentOrNudity": "NONE",
+    "unrestrictedWebAccess": "NONE",
+    "gamblingWithRealCurrency": "NONE"
+  },
+  "notes": "A planning tool: no user-generated content, no web browsing, no messaging."
+}

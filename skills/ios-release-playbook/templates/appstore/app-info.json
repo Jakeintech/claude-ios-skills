@@ -1,0 +1,15 @@
+{
+  "app_id": "",
+  "name": "<Brand>: <What it is>",
+  "subtitle": "Pick the shot. Get the date.",
+  "primaryCategory": "PHOTO_AND_VIDEO",
+  "secondaryCategory": "NAVIGATION",
+  "primaryLocale": "en-US",
+  "bundleId": "com.example.myapp",
+  "sku": "myapp-ios",
+  "contentRightsDeclaration": "USES_THIRD_PARTY_CONTENT",
+  "availableTerritories": "all",
+  "privacyPolicyUrl": "https://<OWNER>.github.io/<APP>-site/privacy-policy.html",
+  "marketing_url": "https://<OWNER>.github.io/<APP>-site/",
+  "support_url": "https://<OWNER>.github.io/<APP>-site/support.html"
+}

@@ -1,0 +1,228 @@
+# Fastlane configuration for MyApp.
+#
+# Quick reference:
+#   fastlane tests        -> engine package tests + app tests on the iPhone 18 Pro simulator
+#   fastlane register_ids -> register the bundle ids with their capabilities (App Groups, WeatherKit, IAP)
+#   fastlane verify_asc   -> check whether the App Store Connect app record exists
+#   fastlane beta         -> tests gate, archive the committed build number, upload to TestFlight
+#   fastlane screenshots  -> capture demo-mode screens and frame them for the App Store
+#
+# Signing: automatic (Xcode-managed), team <TEAM_ID>.
+# Versions live in project.yml (MARKETING_VERSION / CURRENT_PROJECT_VERSION);
+# bump the build with scripts/bump-build.sh and commit it before `beta`.
+# Credentials come from environment variables, never committed:
+#
+#   Option A: APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_API_KEY_ISSUER_ID,
+#             APP_STORE_CONNECT_API_KEY_KEY (base64 of the .p8, or inline PEM)
+#   Option B: ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY_PATH (path to the .p8;
+#             defaults to ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8)
+#
+# Release builds use the pinned Xcode: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+
+default_platform(:ios)
+
+PROJECT        = "MyApp.xcodeproj"
+SCHEME_APP     = "MyApp"
+APP_IDENTIFIER = "com.example.myapp"
+TEAM_ID        = "<TEAM_ID>"
+# MYAPP_SIM_DEST picks another simulator (e.g. one an agent created for itself).
+SIM_DEST       = ENV["MYAPP_SIM_DEST"] || "platform=iOS Simulator,name=iPhone 18 Pro,OS=27.2"
+
+ENV["DEVELOPER_DIR"] ||= "/Applications/Xcode.app/Contents/Developer"
+
+platform :ios do
+  before_all do
+    # project.yml is the source of truth; the .xcodeproj is generated and not committed.
+    sh("cd .. && xcodegen generate")
+  end
+
+  # ---------------------------------------------------------------------------
+  # Tests
+
+  desc "Engine package tests, then the app tests on the iPhone 18 Pro simulator"
+  lane :tests do
+    sh("cd .. && swift test --package-path Packages/MyAppCore")
+    run_tests(
+      project: PROJECT,
+      scheme: SCHEME_APP,
+      destination: SIM_DEST,
+      configuration: "Debug",
+      clean: false,
+      result_bundle: true,
+      output_directory: "fastlane/test_output"
+    )
+  end
+
+  # ---------------------------------------------------------------------------
+  # Beta
+
+  desc "Test, archive and upload the committed build number to TestFlight (App Store eligible)"
+  lane :beta do
+    ensure_git_status_clean
+    tests
+
+    setup_ci if is_ci
+    api_key = app_store_api_key
+
+    project_yml  = File.read(File.expand_path("../project.yml", __dir__))
+    build_number = project_yml[/CURRENT_PROJECT_VERSION:\s*"?(\d+)"?/, 1].to_i
+    marketing    = project_yml[/MARKETING_VERSION:\s*"?([\d.]+)"?/, 1]
+    UI.user_error!("Set CURRENT_PROJECT_VERSION in project.yml") if build_number < 1
+    # Versions are MAJOR.MINOR.PATCH (docs/RELEASE.md › Versions); the App Store version must match the binary.
+    UI.user_error!("MARKETING_VERSION #{marketing} is not MAJOR.MINOR.PATCH") unless marketing =~ /\A\d+\.\d+\.\d+\z/
+    store_version = JSON.parse(File.read(File.expand_path("../appstore/listing.json", __dir__))).dig("version", "versionString")
+    UI.user_error!("listing.json versionString #{store_version} != MARKETING_VERSION #{marketing}") unless store_version == marketing
+    latest = begin
+      latest_testflight_build_number(app_identifier: APP_IDENTIFIER, version: marketing, api_key: api_key, initial_build_number: 0)
+    rescue => e
+      UI.important("Could not read the latest TestFlight build (#{e.message}); trusting project.yml")
+      0
+    end
+    UI.user_error!("Build #{build_number} is not above TestFlight's #{latest}: run scripts/bump-build.sh and commit") if build_number <= latest
+    UI.message("Uploading #{marketing} (#{build_number})")
+
+    # Xcode provisions with the account signed into Xcode › Settings › Accounts.
+    # Xcode's API-key provisioning fails on this Mac ("bearer token"), so the key is
+    # only passed to xcodebuild when XCODE_USE_API_KEY=1 (e.g. on CI).
+    auth_args = "-allowProvisioningUpdates"
+    key_path = api_key_path
+    if ENV["XCODE_USE_API_KEY"] == "1" && key_path && File.exist?(key_path)
+      auth_args += " -authenticationKeyID #{api_key[:key_id]}" \
+                   " -authenticationKeyIssuerID #{api_key[:issuer_id]}" \
+                   " -authenticationKeyPath #{key_path}"
+    end
+
+    # app-store (App Store Connect), not testFlightInternalTestingOnly: internal-only builds
+    # can't be attached to an App Store version later.
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME_APP,
+      configuration: "Release",
+      clean: true,
+      destination: "generic/platform=iOS",
+      export_method: "app-store",
+      output_directory: "fastlane/builds",
+      xcargs: auth_args,
+      export_options: {
+        method: "app-store",
+        signingStyle: "automatic",
+        teamID: TEAM_ID
+      }
+    )
+
+    listing = JSON.parse(File.read(File.expand_path("../appstore/listing.json", __dir__)))
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      changelog: listing.dig("testflight", "whatToTest")
+    )
+
+    # One tag per uploaded build: v1.0.0-build2.
+    tag = "v#{marketing}-build#{build_number}"
+    sh("cd .. && git tag -a #{tag} -m 'MyApp #{marketing} (#{build_number}) uploaded to TestFlight' && git push origin #{tag}")
+  end
+
+  # ---------------------------------------------------------------------------
+  # Screenshots
+
+  desc "Capture demo-mode screens on the simulator and frame them for the App Store"
+  lane :screenshots do
+    sh("cd .. && scripts/capture-appstore-screens.sh")
+    sh("cd .. && python3 scripts/compose-appstore-screenshots.py appstore/screenshots/raw appstore/screenshots/final")
+  end
+
+  # ---------------------------------------------------------------------------
+  # Register bundle IDs
+
+  desc "Ensure the bundle ids exist in the developer portal with the capabilities the app uses"
+  lane :register_ids do
+    key_hash = app_store_api_key
+    require "spaceship"
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(**key_hash)
+
+    # identifier => [display name, capability types]. Keep in step with appstore/asc/caps.rb
+    # and the entitlements in project.yml. The App Group itself is registered by Xcode's
+    # automatic signing on the first archive. WeatherKit is not in the API's capability list:
+    # automatic signing enables it from the entitlement, or tick it under the identifier's
+    # Capabilities and App Services in the developer portal.
+    specs = {
+      "com.example.myapp"         => ["MyApp",         ["APP_GROUPS", "IN_APP_PURCHASE"]],
+      "com.example.myapp.widgets" => ["MyApp Widgets", ["APP_GROUPS"]],
+      # Apple Watch app (Pro) and its complications, embedded in the iOS app.
+      "com.example.myapp.watchkitapp"         => ["MyApp Watch",         ["APP_GROUPS"]],
+      "com.example.myapp.watchkitapp.widgets" => ["MyApp Watch Widgets", ["APP_GROUPS"]]
+    }
+
+    specs.each do |identifier, (name, wanted_caps)|
+      bundle = Spaceship::ConnectAPI::BundleId.all(filter: { identifier: identifier })
+                 .find { |b| b.identifier == identifier }
+      if bundle.nil?
+        bundle = Spaceship::ConnectAPI::BundleId.create(name: name, identifier: identifier, platform: "IOS")
+        UI.success("registered #{identifier}")
+      else
+        UI.message("exists     #{identifier}")
+      end
+
+      have = Spaceship::ConnectAPI::BundleIdCapability.all(bundle_id_id: bundle.id).map(&:capability_type)
+      (wanted_caps - have).each do |cap|
+        bundle.create_capability(cap)
+        UI.success("  + #{cap}")
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Verify ASC
+
+  desc "Check that the App Store Connect app record exists and print its id"
+  lane :verify_asc do
+    key_hash = app_store_api_key
+    require "spaceship"
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(**key_hash)
+
+    app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+    if app.nil?
+      UI.important("App record for #{APP_IDENTIFIER} NOT FOUND in App Store Connect.")
+      UI.important("Create it in App Store Connect (My Apps > + > New App, bundle id #{APP_IDENTIFIER}, SKU myapp-ios),")
+      UI.important("then put its id in appstore/app-info.json and appstore/products.yml.")
+    else
+      UI.success("Found app: #{app.name}")
+      UI.success("  id:        #{app.id}")
+      UI.success("  bundle_id: #{app.bundle_id}")
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Helpers
+
+  def api_key_path
+    key_id = ENV["APP_STORE_CONNECT_API_KEY_ID"] || ENV["ASC_KEY_ID"]
+    ENV["ASC_PRIVATE_KEY_PATH"] || File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{key_id}.p8")
+  end
+
+  def app_store_api_key
+    key_id      = ENV["APP_STORE_CONNECT_API_KEY_ID"]        || ENV["ASC_KEY_ID"]
+    issuer_id   = ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"] || ENV["ASC_ISSUER_ID"]
+    key_content = ENV["APP_STORE_CONNECT_API_KEY_KEY"]
+    UI.user_error!("Set ASC_KEY_ID and ASC_ISSUER_ID (or the APP_STORE_CONNECT_API_KEY_* names)") unless key_id && issuer_id
+
+    if key_content && !key_content.empty?
+      app_store_connect_api_key(
+        key_id:                key_id,
+        issuer_id:             issuer_id,
+        key_content:           key_content,
+        is_key_content_base64: !key_content.include?("-----BEGIN"),
+        duration:              1200,
+        in_house:              false
+      )
+    else
+      app_store_connect_api_key(
+        key_id:       key_id,
+        issuer_id:    issuer_id,
+        key_filepath: api_key_path,
+        duration:     1200,
+        in_house:     false
+      )
+    end
+  end
+end

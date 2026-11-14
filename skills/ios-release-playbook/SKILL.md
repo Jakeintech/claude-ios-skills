@@ -21,7 +21,7 @@ Modes:
 
 ## Hard rules (every app)
 
-- **Never submit for review.** Claude prepares everything; the owner presses Submit.
+- **Submit only on the owner's explicit yes in chat, in that turn.** Claude prepares everything and asks once, with the draft's contents and "can't be undone" spelled out. Without that yes the owner presses Submit. After submitting, confirm through the API that the version is `WAITING_FOR_REVIEW`.
 - **Dry-run first.** Every write to App Store Connect runs with `--dry-run`, Claude reads the diff, then applies.
 - **Credentials come from the environment only.** `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY_PATH`, or the `APP_STORE_CONNECT_API_KEY_*` trio. Never commit them or echo them.
 - **The owner's identity stays private.** Their name, email and phone live only in the app's private repo (`appstore/listing.json` › reviewDetail), never in public repos, skills or outside requests.
@@ -96,7 +96,7 @@ What the API **can't** do. Claude does these in the browser (§3a) or puts them 
 - **App Privacy** (the nutrition label). The API can't read or write it, and `ready_check.rb` passes without it, but Submit is refused. Fill it in the browser (§3a). **An app has reached "READY" with this still on "Get Started".**
 - Choosing the IAPs for the **first** submission. In the 2026 web UI there is no IAP section on the version page; they are picked in the "Add for Review" flow. Purchase pages show "Prepare for Submission" while the API says `READY_TO_SUBMIT`; trust the API.
 - Mac (Apple silicon) and Apple Vision Pro availability. **Both default to ON.** This is the owner's call.
-- Enabling **WeatherKit** (and other App Services) for the bundle id in the developer portal. Without it the build shows "forecast didn't load" on TestFlight even though the entitlement is in place.
+- Enabling **WeatherKit** (and other App Services) for the bundle id in the developer portal: Identifiers → the app id → **App Services** tab. Claude can check and tick it in Chrome; Save is greyed out when it's already on. Then prove the build carries it: `unzip -q fastlane/builds/<App>.ipa -d /tmp/x && codesign -d --entitlements :- /tmp/x/Payload/<App>.app | grep weatherkit`. A "forecast didn't load" on an older TestFlight build doesn't mean the current one fails.
 - The App Group itself is created by Xcode automatic signing on the first archive.
 
 ### 3a. Browser pass (Claude in Chrome), after `ready_check.rb` is green
@@ -109,7 +109,7 @@ Load the `chrome-browser` skill first. Open a new tab and read each page with `g
 | App Information | `info` | Name/subtitle, categories, content rights, age rating shows a value (4+ etc). Medical-device declaration applies only to Medical / Health & Fitness apps. |
 | App Privacy | `privacy` | A "Product Page Preview" block, not "Get Started" (see below). |
 | App Accessibility | `accessibility` | Drafts per device; publishable only after release. |
-| Pricing and Availability | `pricing` | Price, 175 regions, Mac and Vision Pro ticked as the owner wants. |
+| Pricing and Availability | `pricing` | Price, 175 regions. Mac and Vision Pro are ON by default. If the owner leaves it to Claude, untick both for a 1.0 that depends on GPS, the compass, the camera or AR and wasn't tested there. It's reversible with no review. Confirm with JS that only those two checkboxes changed, then Save. |
 | In-App Purchases / Subscriptions | `iaps`, `subscriptions` | Each product has a localization, price, review screenshot and note. Check the API state too. |
 
 Check that every input on the version page is filled:
@@ -216,7 +216,8 @@ Use `ios-site`. Keep the site's Pro list, data-sources rows (each outside servic
 3. Developer portal → Identifiers → the app id → App Services: **enable WeatherKit** (and any other App Service the app uses).
 4. Pricing and Availability: Mac and Apple Vision Pro are **on by default**. Untick them unless wanted.
 5. Check the attached build and the screenshots once in the web UI.
-6. Press **Submit for Review**.
+6. Press **Submit for Review**, or say yes and Claude presses it in the Draft Submissions panel.
+7. Release type MANUAL: after approval, press **Release** (or say yes).
 6. After release: **publish the accessibility declarations** (the drafts already exist), and tag the release commit.
 
 ## 10. Lessons that cost time (don't repeat)

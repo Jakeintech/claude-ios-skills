@@ -143,9 +143,18 @@ iaps = ASC.all("/v1/apps/#{APP}/inAppPurchasesV2?limit=200")
     say("ok   #{pid} en-US localization")
   end
   sched = ASC.req(:get, "/v2/inAppPurchases/#{iap['id']}/iapPriceSchedule", nil, raise_on_error: false)
+  current = nil
   if sched && sched["data"]
-    say("same #{pid} price schedule")
+    # The USA manual price now in effect (no end date); a different base_price replaces the schedule.
+    manual = ASC.get("/v1/inAppPurchasePriceSchedules/#{sched['data']['id']}/manualPrices?include=inAppPurchasePricePoint,territory&limit=50")
+    usa = manual["data"].find { |p| p.dig("relationships", "territory", "data", "id") == "USA" && p["attributes"]["endDate"].nil? }
+    point = usa && (manual["included"] || []).find { |x| x["type"] == "inAppPurchasePricePoints" && x["id"] == usa.dig("relationships", "inAppPurchasePricePoint", "data", "id") }
+    current = point && point["attributes"]["customerPrice"].to_f
+  end
+  if current && current == nc["base_price"].to_f
+    say("same #{pid} price schedule ($#{current})")
   else
+    say("diff #{pid} price $#{current} -> $#{nc['base_price']}") if current
     pp = price_point("/v2/inAppPurchases/#{iap['id']}/pricePoints?filter[territory]=USA&limit=200", nc["base_price"])
     write(:post, "/v1/inAppPurchasePriceSchedules", { data: { type: "inAppPurchasePriceSchedules", relationships: {
         inAppPurchase: rel("inAppPurchases", iap["id"]), baseTerritory: rel("territories", "USA"),

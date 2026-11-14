@@ -62,6 +62,13 @@ App Review 2.1 / 3.1 and refunds hit apps whose paywall promises more than they 
 
   Correct every claim against the code: a first draft once said a Live Activity starts on its own, and it didn't.
 
+## 2a. Pricing against competitors
+
+- Read competitors' current prices from their App Store pages (`WebFetch https://apps.apple.com/us/app/<slug>/id<N>`, asking for the price and in-app purchases) on the day, not from old research.
+- Present a table (theirs vs ours) and give the owner 2–3 options with ratios. Lifetime is about 2× yearly (balanced); 1.5× is aggressive and cannibalises the subscription; 2.5× protects it. Recommend one. The price is the owner's call.
+- A free app with Pro competes on the Pro price, not with $10 paid-up-front apps directly. Say so in the comparison.
+- Change the price everywhere in one commit: `products.yml`, the `.storekit` file, tests that hard-code display prices, SPEC, the site (rebuild and push), and ASC via `create_products.rb`. Then curl the live site to check.
+
 ## 3. App Store Connect as code (`templates/appstore/`)
 
 | File | What it drives |
@@ -74,7 +81,7 @@ App Review 2.1 / 3.1 and refunds hit apps whose paywall promises more than they 
 Order:
 1. `ruby asc/audit.rb` — dump live state, read-only.
 2. `ruby asc/apply.rb --dry-run`, then apply. Then `ruby asc/settings.rb --dry-run`, then apply.
-3. `ruby asc/create_products.rb --dry-run`, then apply.
+3. `ruby asc/create_products.rb --dry-run`, then apply. It also replaces a one-time purchase's price schedule when the USA price differs from `products.yml`. A price change needs no new review.
 4. Screenshots (§5).
 5. `ruby asc/ready_check.rb` — every line must be green.
 
@@ -109,6 +116,11 @@ Check that every input on the version page is filled:
 ```js
 const out={}; for (const el of document.querySelectorAll('main input, main textarea')) { const k=(el.labels?.[0]?.innerText||el.getAttribute('aria-label')||el.name||'').trim().slice(0,40); if(k) out[k]= el.type==='checkbox'||el.type==='radio' ? el.checked : (el.value||'').length+' chars'; } out
 ```
+
+**Submission draft.** "Add for Review" (on the version, the subscription group, each subscription and each IAP) adds items to one draft submission, which nothing sends until **Submit for Review**.
+- A first auto-renewable subscription is refused unless its **group** is in the draft too ("must be submitted with its subscription group").
+- A first non-consumable must be added on its own page.
+- Open the "Draft Submissions" panel and confirm it lists: the app version (with build), the group, every subscription and every IAP, with no warning banner. Never press Submit.
 
 **App Privacy flow.** The answers come from `appstore/privacy-labels.json`:
 1. Get Started → Yes, we collect data → Save.

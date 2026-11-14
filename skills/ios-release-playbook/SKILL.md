@@ -86,7 +86,7 @@ What the API sets (and apply.rb does):
 - the IAP review note.
 
 What the API **can't** do. Claude does these in the browser (§3a) or puts them on the owner checklist (§9):
-- **App Privacy** (the nutrition label). The API can't read or write it, and `ready_check.rb` passes without it, but Submit is refused. Fill it in the browser (§3a). **Predawn reached "READY" with this still on "Get Started".**
+- **App Privacy** (the nutrition label). The API can't read or write it, and `ready_check.rb` passes without it, but Submit is refused. Fill it in the browser (§3a). **An app has reached "READY" with this still on "Get Started".**
 - Choosing the IAPs for the **first** submission. In the 2026 web UI there is no IAP section on the version page; they are picked in the "Add for Review" flow. Purchase pages show "Prepare for Submission" while the API says `READY_TO_SUBMIT`; trust the API.
 - Mac (Apple silicon) and Apple Vision Pro availability. **Both default to ON.** This is the owner's call.
 - Enabling **WeatherKit** (and other App Services) for the bundle id in the developer portal. Without it the build shows "forecast didn't load" on TestFlight even though the entitlement is in place.

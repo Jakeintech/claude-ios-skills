@@ -1,7 +1,7 @@
 ---
 name: ios-release-playbook
 description: Use when taking an iOS app from "features done" to "owner only has to press Submit" — App Store Connect as code, bundle ids, build numbers and TestFlight, screenshots and creative assets, the Icon Composer icon, review notes, paywall honesty, and the owner-only checklist. Also use at the START of a new app, to set up the demo-mode launch arguments, the project roadmap skill and the release scripts on day one so release week is mechanical. Holds battle-tested templates (Ruby ASC client, fastlane lanes, capture/compose scripts, icon generator) and the lessons from shipping a 1.0.0.
-allowed-tools: Bash(*) Read Write Edit Glob Grep Agent
+allowed-tools: Bash(*) Read Write Edit Glob Grep Agent mcp__claude-in-chrome__*
 argument-hint: "[setup|release|checklist]"
 ---
 
@@ -16,7 +16,7 @@ actually worked against the live API.**
 
 Modes:
 - `setup`: day-one work for a new app (§1).
-- `release`: run §2–§8 in order.
+- `release`: run §2–§8 in order, including the browser pass (§3a).
 - `checklist`: print §9 for the owner.
 
 ## Hard rules (every app)
@@ -85,11 +85,45 @@ What the API sets (and apply.rb does):
 - accessibility declarations as **drafts**, which can only be **published after the app is live**;
 - the IAP review note.
 
-What the API **can't** do. These go on the owner checklist (§9):
-- Ticking the IAPs on the version page for the **first** submission with IAPs.
-- Unticking Mac (Apple silicon) and Apple Vision Pro availability.
+What the API **can't** do. Claude does these in the browser (§3a) or puts them on the owner checklist (§9):
+- **App Privacy** (the nutrition label). The API can't read or write it, and `ready_check.rb` passes without it, but Submit is refused. Fill it in the browser (§3a). **Predawn reached "READY" with this still on "Get Started".**
+- Choosing the IAPs for the **first** submission. In the 2026 web UI there is no IAP section on the version page; they are picked in the "Add for Review" flow. Purchase pages show "Prepare for Submission" while the API says `READY_TO_SUBMIT`; trust the API.
+- Mac (Apple silicon) and Apple Vision Pro availability. **Both default to ON.** This is the owner's call.
 - Enabling **WeatherKit** (and other App Services) for the bundle id in the developer portal. Without it the build shows "forecast didn't load" on TestFlight even though the entitlement is in place.
 - The App Group itself is created by Xcode automatic signing on the first archive.
+
+### 3a. Browser pass (Claude in Chrome), after `ready_check.rb` is green
+
+Load the `chrome-browser` skill first. Open a new tab and read each page with `get_page_text`: the counters under text fields show *characters left*, so a number below the limit means the field is filled. Pages, under `https://appstoreconnect.apple.com/apps/<ASC_APP_ID>/distribution/`:
+
+| Page | Path | What "done" looks like |
+|---|---|---|
+| Version | `ios/version/inflight` | Every input filled (run the JS below), build attached, header/search assets placed, screenshots per device tab. Faded shots on a smaller device tab are inherited from the large set: that is fine. |
+| App Information | `info` | Name/subtitle, categories, content rights, age rating shows a value (4+ etc). Medical-device declaration applies only to Medical / Health & Fitness apps. |
+| App Privacy | `privacy` | A "Product Page Preview" block, not "Get Started" (see below). |
+| App Accessibility | `accessibility` | Drafts per device; publishable only after release. |
+| Pricing and Availability | `pricing` | Price, 175 regions, Mac and Vision Pro ticked as the owner wants. |
+| In-App Purchases / Subscriptions | `iaps`, `subscriptions` | Each product has a localization, price, review screenshot and note. Check the API state too. |
+
+Check that every input on the version page is filled:
+```js
+const out={}; for (const el of document.querySelectorAll('main input, main textarea')) { const k=(el.labels?.[0]?.innerText||el.getAttribute('aria-label')||el.name||'').trim().slice(0,40); if(k) out[k]= el.type==='checkbox'||el.type==='radio' ? el.checked : (el.value||'').length+' chars'; } out
+```
+
+**App Privacy flow.** The answers come from `appstore/privacy-labels.json`:
+1. Get Started → Yes, we collect data → Save.
+2. Tick only the declared types. Confirm with JS that just those checkboxes are ticked: `[...document.querySelectorAll('[role=dialog] input[type=checkbox]')].filter(c=>c.checked).map(c=>c.id)`. Then Save, and OK on "Additional Setup Required".
+3. For each type, "Set Up <type>": tick the purposes (for example App Functionality) → Next → linked to identity? → Next → two pages of definitions → Next → used for tracking? → Save.
+4. Check that the Product Page Preview reads as intended (for example "Data Not Linked to You: Location").
+5. **Publish** shows an attestation ("you agree that your responses are accurate…"). That is the owner's legal statement. Ask for an explicit yes in chat before pressing it, or leave it saved and put "Publish App Privacy" on the owner checklist.
+
+Optional sections, not needed for Submit: Custom Product Pages, Product Page Optimization, In-App Events, Promo Codes, Game Center, Retention Messaging, App Store Server Notifications (only with a backend), User Privacy Choices URL, Accessibility URL.
+
+**iPhone Duo** (2026) has its own screenshot tab, which is optional. Its sizes are 1398×2034 folded and 2007×2853 unfolded.
+- The simulator has two displays. `simctl io <udid> screenshot --display=1` captures the folded screen and `--display=3` the inner one.
+- simctl can't unfold the device, so the inner screen stays black.
+- On the folded screen, iOS moves the status and back button into a side rail. Check the app's Duo layout (`app-resizability`) before advertising it.
+- Without Duo shots, the store uses the iPhone set.
 
 Age rating: after a full patch, `kidsAgeBand`, `socialMediaAgeRestricted`, `gracRatingClassificationNumber` and `developerAgeRatingInfoUrl` stay `nil`. They are optional follow-ups; don't chase them.
 
@@ -117,6 +151,7 @@ Name and keywords:
 6. After processing, `ruby asc/attach_build.rb <N> --dry-run`, then without (it picks the highest VALID build of the
    listing's version if N is omitted). Then `ruby asc/testflight.rb --dry-run`, then apply, so What to Test is filled for that build.
    Then `ruby asc/ready_check.rb`, which must end `READY: only Submit for Review remains`, and look at the `build-icon.png` it saves.
+   **READY from the API is not the end:** do the browser pass (§3a) for App Privacy and the other web-only fields.
 7. StoreKit purchase tests can stall on a brand-new simulator behind the "Sign in to Apple Account" sheet. Rerun them, or skip that one suite with a note in STATUS.
 
 ## 5. Screenshots and creative assets (`templates/scripts/`)
@@ -164,11 +199,12 @@ Use `ios-site`. Keep the site's Pro list, data-sources rows (each outside servic
 
 ## 9. Owner-only checklist (say it plainly at the end)
 
-1. Version page → In-App Purchases and Subscriptions: **tick each IAP** (first submission only).
-2. Developer portal → Identifiers → the app id → App Services: **enable WeatherKit** (and any other App Service the app uses).
-3. Pricing and Availability: **untick Mac and Apple Vision Pro** unless wanted.
-4. Check the attached build and the screenshots once in the web UI.
-5. Press **Submit for Review**.
+1. App Privacy: **Publish** (an attestation in their name), unless they said yes in chat and Claude published it.
+2. **Add for Review**: in that flow, include each IAP and subscription (first submission only).
+3. Developer portal → Identifiers → the app id → App Services: **enable WeatherKit** (and any other App Service the app uses).
+4. Pricing and Availability: Mac and Apple Vision Pro are **on by default**. Untick them unless wanted.
+5. Check the attached build and the screenshots once in the web UI.
+6. Press **Submit for Review**.
 6. After release: **publish the accessibility declarations** (the drafts already exist), and tag the release commit.
 
 ## 10. Lessons that cost time (don't repeat)

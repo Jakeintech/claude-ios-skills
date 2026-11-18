@@ -40,6 +40,7 @@ The Platform Engineer autonomously identifies integrations you didn't ask for �
 | **ios-code-review** | `/ios-code-review` | Code quality + performance — memory, concurrency, `@Observable`, energy efficiency |
 | **ios-iterate** | `/ios-iterate "feedback"` | Rapid design iteration — screenshot, apply, rebuild, auto-review, before/after |
 | **ios-docs** | `/ios-docs` | Living documentation — architecture diagrams, API reference, CHANGELOG, drift detection |
+| **ios-share-cards** | `/ios-share-cards [mock\|build\|review]` | Social share cards — Story, Post and Square cards, transparent stickers, a full-screen style picker, the Instagram Stories hand-off, ten system typefaces, tests; with sourced design rules and the SwiftUI kit that shipped |
 
 ### Prepare
 

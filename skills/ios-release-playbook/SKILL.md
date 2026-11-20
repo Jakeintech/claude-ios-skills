@@ -1,6 +1,6 @@
 ---
 name: ios-release-playbook
-description: Use when taking an iOS app from "features done" to "owner only has to press Submit" — App Store Connect as code, bundle ids, build numbers and TestFlight, screenshots and creative assets, the Icon Composer icon, review notes, paywall honesty, and the owner-only checklist. Also use at the START of a new app, to set up the demo-mode launch arguments, the project roadmap skill and the release scripts on day one so release week is mechanical. Holds battle-tested templates (Ruby ASC client, fastlane lanes, capture/compose scripts, icon generator) and the lessons from shipping a 1.0.0.
+description: Use when taking an iOS app from "features done" to "owner only has to press Submit" — App Store Connect as code, bundle ids, build numbers and TestFlight, screenshots and creative assets, the Icon Composer icon, review notes, paywall honesty, and the owner-only checklist. Also use at the START of a new app, to set up the demo-mode launch arguments, the App Store rating prompt at a key moment, the project roadmap skill and the release scripts on day one so release week is mechanical. Holds battle-tested templates (Ruby ASC client, fastlane lanes, capture/compose scripts, icon generator) and the lessons from shipping a 1.0.0.
 allowed-tools: Bash(*) Read Write Edit Glob Grep Agent mcp__claude-in-chrome__*
 argument-hint: "[setup|release|checklist]"
 ---
@@ -43,6 +43,15 @@ These cost an hour at the start and save days at the end.
 4. **App Store as code** from the first ASC contact: `appstore/*.json` plus `products.yml` are the source of truth (§3).
 5. **Versioning**: semver `MARKETING_VERSION` (1.0.0 → 1.0.1 → 1.1.0) in `project.yml`, equal to `listing.json` › version.versionString. `CURRENT_PROJECT_VERSION` is the one build number every target reads (`scripts/bump-build.sh`).
 6. **Every target's bundle id** goes in the `register_ids` lane at the moment the target is added (widgets, watch app, watch widgets), not at upload time.
+7. **Rating prompt at one key moment** (`templates/App/ReviewPrompt.swift`, test `templates/AppTests/ReviewPromptPolicyTests.swift`). Ratings drive App Store ranking and conversion, and the people most likely to rate are the ones who just succeeded.
+   - **API:** SwiftUI `@Environment(\.requestReview)` (`RequestReviewAction`, iOS 16+, `@MainActor`), wrapped by `.reviewPrompt(prompter)` on the root view. Not `SKStoreReviewController`, which is deprecated as of iOS 18.
+   - **Where:** call `recordKeyMoment()` at a positive, high-signal moment. In games, that's an island, level or run won (on the result screen, after the score lands). In utility apps, it's the Nth successful core action (a walk logged, a plan saved, a photo exported). The prompt waits 1.5 s so the win screen settles first. **Never** on launch, mid-task, after an error or failed load, or right after a purchase. Call `recordFriction()` at those points; it holds the prompt back for 24 h.
+   - **Gates** (`ReviewPromptPolicy`, all must pass; state in UserDefaults): ≥ 3 sessions (`recordSession()` once per launch), ≥ 3 key moments, ≥ 3 days since install, at most once per app version, ≥ 120 days between asks. Tune the numbers per app, not the shape.
+   - **Apple's limits:** the system shows the sheet at most 3 times in 365 days per person, may not show it at all, and never shows it on TestFlight. An ask counts as used whether or not it appeared.
+   - **No pre-prompt.** Never show a custom "Do you like this app?" or star picker that sends happy people to the App Store and the rest to feedback. App Review 5.6.1 rejects review gating. The system sheet is the only ask.
+   - **Launch arguments:** `-demo 1` suppresses the prompt, so it can never appear in screenshot captures. `-reviewPrompt off` suppresses it everywhere. `-reviewPrompt force` skips the gates so the next key moment asks (to check the wiring in a Debug build, where the sheet always shows). Parse it in `LaunchOptions` (`reviewPrompt`).
+   - **Rate row:** add `RateAppRow(appName: "MyApp", appStoreID: "<ASC_APP_ID>")` ("Rate MyApp", SF Symbol `star`) to Settings or About. It opens `https://apps.apple.com/app/id<ASC_APP_ID>?action=write-review` for people who want to rate on their own. It's always visible, never gated.
+   - **Test:** copy the test file and change `@testable import MyApp`. It pins every gate with injected dates and counters, so tuning a threshold breaks a test on purpose.
 
 ## 2. Truth pass: the app sells only what ships
 
@@ -50,6 +59,12 @@ App Review 2.1 / 3.1 and refunds hit apps whose paywall promises more than they 
 
 - **One list of paid features**, in code (`PaywallCopy.features`), pinned by a test (`testFeatures_onlyWhatShips`). The listing description, IAP review notes, review notes, website and TestFlight "What to test" all copy that list word for word. A feature that slips comes out of all of them in the same commit and moves to the next patch version.
 - **Sweep for dead buttons**: grep for empty actions, `TODO`, placeholder `Button("…") {}`. Each one is either built or removed.
+- **Rating prompt is wired to a key moment** (§1.7):
+  - `grep -rn "recordKeyMoment\|recordSession\|recordFriction\|reviewPrompt(" <App>` shows it fires at a win or completed goal, never at launch, after an error or after a purchase.
+  - The Rate row is in Settings or About with the real ASC app id.
+  - `ReviewPromptPolicyTests` pass.
+  - No custom pre-prompt anywhere (5.6.1).
+  - A Debug run with `-reviewPrompt force` shows the system sheet after the key moment.
 - **Remove unused usage descriptions.** `PhotosPicker` runs out of process, so `NSPhotoLibraryUsageDescription` isn't needed. Unused purpose strings draw questions.
 - **Review notes are a script for the reviewer** (template in `appstore/listing.json`):
   - no login or backend;
@@ -181,7 +196,7 @@ Name and keywords:
    - Lead with the outcome screen (the result list, then the detail that answers the question), not the home screen.
    - Then the daily-use screen, the signature input, the "wow" view, the accessibility/night mode, the tools.
    - Drop any shot that shows "sample" or "demo" labels or an invisible state (an "offline" shot that looks online).
-5. **Open the composed PNGs and look at them.** Check for clipped titles under the tab bar, guide lines crossing labels, and a wrong date.
+5. **Open the composed PNGs and look at them.** Check for clipped titles under the tab bar, guide lines crossing labels, a wrong date, and any system sheet (a rating prompt means demo mode didn't suppress it: §1.7).
 6. Upload: `ruby asc/screenshots.rb appstore/screenshots/final --dry-run`, then for real. It replaces each display-type set whole and creates new sets (Watch). It must print `states COMPLETE` for every set.
 7. **Creative assets**, optional but cheap:
    - `make-creative-assets.py` makes the product page header (3840×1646) and the search card (3840×2560) from the raw shots plus the icon.

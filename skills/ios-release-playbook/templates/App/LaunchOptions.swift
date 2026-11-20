@@ -3,7 +3,8 @@ import Foundation
 /// Launch arguments: `-demo 1 -now 2026-11-11T20:46:00Z`, plus `-state <name>`, `-tab <name>`,
 /// `-redNight 1` and `-screen <name>` for checking designed states in the simulator. Demo only:
 /// `-layers a,b` turns map layers on, `-pro 1` unlocks Pro and `-minute <ISO>` sets the Plan
-/// minute, to check and capture the layers.
+/// minute, to check and capture the layers. `-reviewPrompt force|off` drives the rating prompt
+/// (`ReviewPrompt.swift`); demo mode suppresses it unless `force` is passed.
 struct LaunchOptions: Sendable, Equatable {
     var isDemo = false
     var now: Date?
@@ -18,6 +19,8 @@ struct LaunchOptions: Sendable, Equatable {
     var previewPro = false
     /// `-minute 2026-11-24T20:23:00Z` in demo mode: a chosen time on one screen. Ignored outside demo mode.
     var minute: Date?
+    /// `-reviewPrompt force|off`. Suppressed in demo mode so it never lands in a screenshot.
+    var reviewPrompt: ReviewPromptMode = .normal
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments) {
         func value(_ key: String) -> String? {
@@ -38,5 +41,6 @@ struct LaunchOptions: Sendable, Equatable {
         layers = value("-layers")?.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) } ?? []
         previewPro = isDemo && (value("-pro") == "1" || value("-pro") == "YES")
         if isDemo, let m = value("-minute") { minute = ISO8601DateFormatter().date(from: m) }
+        reviewPrompt = ReviewPromptMode(arguments: arguments, isDemo: isDemo)
     }
 }

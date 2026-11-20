@@ -18,5 +18,7 @@ then change what's listed here. Ruby scripts need only the standard library. Pyt
 | `scripts/make-creative-assets.py` | The tagline, the shots used, colours. |
 | `scripts/make-app-icon.py` | The art (`subject()`, `disc()`), `LOOKS` colours, output paths. Keep the `.icon` manifest writer and the preview sheet. |
 | `scripts/sim-setup.sh` | Simulator names: keep the `Claude <App> …` prefix. |
-| `App/LaunchOptions.swift` | The keys your app needs. Keep demo-only gating for entitlement previews. |
+| `App/LaunchOptions.swift` | The keys your app needs. Keep demo-only gating for entitlement previews, and keep `reviewPrompt`. |
+| `App/ReviewPrompt.swift` | Nothing in the file. Call `recordKeyMoment()` at the app's win or completed goal, and put `RateAppRow` in Settings or About with the ASC app id (SKILL.md §1.7). Tune `ReviewPromptPolicy` defaults only with the tests. |
+| `AppTests/ReviewPromptPolicyTests.swift` | `@testable import MyApp` → the app module. |
 | `project-skill/SKILL.md` | Becomes `.claude/skills/<app>-roadmap/SKILL.md` in the app repo. |

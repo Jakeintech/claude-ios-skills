@@ -93,3 +93,4 @@ Before scaffolding, verify these are installed:
    - Fill in `docs/product-vision/00-product-bounds.md` with their app's identity
    - Set their `DEVELOPMENT_TEAM` in `project.yml`
    - Add project-specific MCP servers to `.mcp.json` if needed
+   - Run `ios-release-playbook setup` next: demo-mode launch arguments, and the App Store rating prompt wired to the app's key moment (playbook §1.7, `templates/App/ReviewPrompt.swift`)

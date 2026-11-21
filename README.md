@@ -1,6 +1,6 @@
 # claude-ios-skills
 
-A [Claude Code](https://claude.ai/code) skill plugin for end-to-end iOS development — from raw idea to App Store and beyond. 19 skills covering product intelligence, development, App Store preparation, submission, and post-launch operations.
+A [Claude Code](https://claude.ai/code) skill plugin for end-to-end iOS development — from raw idea to App Store and beyond. 20 skills covering product intelligence, development, App Store preparation, submission, and post-launch operations.
 
 ## The Hive Mind
 
@@ -20,7 +20,7 @@ You: "Golden Hour: sunrise/sunset widgets, daily photo capture, monthly recaps..
 
 The Platform Engineer autonomously identifies integrations you didn't ask for — "this is a time-bounded daily event, so you need Live Activities, Dynamic Island, Watch complications, Shortcuts, Focus Filters..."
 
-## 19 Skills Across 6 Phases
+## 20 Skills Across 6 Phases
 
 ### Conceive
 
@@ -48,6 +48,7 @@ The Platform Engineer autonomously identifies integrations you didn't ask for �
 |-------|-----------|-------------|
 | **ios-app-icon** | `/ios-app-icon` | Layered Liquid Glass icon via IconComposer with computer-use automation |
 | **ios-screenshots** | `/ios-screenshots` | 4-stage pipeline: raw capture, device frames, marketing shots, upload-ready |
+| **ios-aso-growth** | `/ios-aso-growth [plan\|keywords\|monetization\|assets\|checklist\|redteam]` | Win the category: download intent vs named competitors, the monetization call (ads vs remove-ads vs freemium vs lifetime), keywords with a limits/trademark checker, screenshots with polish passes, custom product pages, in-app events, rating prompts, featuring and award fit, the site, growth loops, and a red-team gate |
 | **ios-store-listing** | `/ios-store-listing` | ASO-optimized metadata — name, subtitle, description, keywords, What's New |
 | **ios-privacy** | `/ios-privacy` | Privacy manifest, nutrition labels, export compliance, age rating, review notes |
 
@@ -122,7 +123,7 @@ cd ~/Documents/GitHub/claude-ios-skills
 ```
 
 This will:
-1. Symlink 19 skills to `~/.claude/skills/ios-dev/`
+1. Symlink 20 skills to `~/.claude/skills/ios-dev/`
 2. Append iOS standards to `~/.claude/CLAUDE.md`
 3. Install 3 MCP servers at user scope
 4. Check for `asc` CLI (optional, for Ship & Operate)

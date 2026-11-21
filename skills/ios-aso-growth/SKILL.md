@@ -92,6 +92,11 @@ Keyword method:
 
 ## 4. Screenshots, banners and art → Design canvas, then `appstore/screenshots/`
 
+**Before any art:** improve and recapture the screens it will show, then tear down the
+top 10 competitors' store art and compare ours blind (`references/store-art-teardown.md`,
+`scripts/fetch_store_art.py`). Art designed alone, around screens you haven't fixed,
+comes out "too simple": it was the first thing the owner said about Reps' first set.
+
 - **The first three frames carry the decision.** Frame 1 states the core promise on the
   core screen; frame 2 shows the differentiator; frame 3 shows proof or the outcome.
 - Captions: one line, 2–6 words, benefit first, sentence case, legible at thumbnail size

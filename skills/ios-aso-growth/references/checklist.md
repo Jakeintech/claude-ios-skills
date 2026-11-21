@@ -19,6 +19,8 @@ Mark each line ✅ done with evidence, ⚠️ done but unverified, ❌ open, or 
 - [ ] Localized listing for the top 4–6 storefronts by category revenue
 
 ## Visuals
+- [ ] Screens critiqued, improved and recaptured before any art (fresh-agent critique)
+- [ ] Top-10 store-art teardown done (`fetch_store_art.py`, contact sheet, blind ranking with ours included)
 - [ ] 10 iPhone screenshots: frames 1–3 = promise, differentiator, proof; real UI, realistic data
 - [ ] Watch screenshots (if there's a Watch app) that don't look like the default template
 - [ ] App Preview video (15–30 s; the first 3 s show the core action)

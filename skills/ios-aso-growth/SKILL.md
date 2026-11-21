@@ -13,6 +13,8 @@ Everything here serves one question, asked from the user's side: **why would I d
 this instead of the app I already know?** If the answer isn't specific, no keyword fixes it.
 
 Work in this order. Each step names the file it produces and the check it must pass.
+Write every caption, subtitle and headline with `ios-conversion-copy` (phrase bank, lint,
+blind persona panel); this skill decides what goes where, that one decides the words.
 
 ## 0. Ground rules (non-negotiable)
 

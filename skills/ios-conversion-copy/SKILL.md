@@ -111,6 +111,16 @@ The same rules apply to words on screen, plus:
 
 ## Lessons from apps that shipped
 
+- Reps (2026-11-21), the loop in practice: round 1 (nine phrase-bank captions vs Hevy's
+  real lines and the old set) won every persona after all frames but only tied on frames
+  1–2. The panel showed why: the Watch, "free" and "no account" were buried at frames
+  7–9; "1RM" lost beginners; "Lift lighter" read as overriding the user's program. Round
+  2 put the trust points in a sub-line on frame 1, restored the "and why" hook one persona
+  named, made the sleep frame opt-in ("Rough night? Your call.") and cut to six frames:
+  5 of 5 on frames 1–2. Evidence: `docs/marketing/panel-rounds/` in the Reps repo.
+- Sub-lines under captions carry trust (platform, price model, privacy) without
+  stealing the caption's one idea. Balance their wrapping so no word is orphaned.
+
 - Reps (2026-11): the v1 captions ("One tap per set.", "Knows the next jump, and why.",
   "Counts in Fitness, too.") failed the lint 4 of 6 times, mostly for naming features.
   The research found real demand behind one of them: lifters complain when a rival's

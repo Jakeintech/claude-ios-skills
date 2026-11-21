@@ -37,8 +37,12 @@ set is yours. Run it after the lint passes, and again after each revision.
 - The competitor set uses real lines (from their store page or description, cited), not
   your paraphrase.
 - Include your previous version as the third set, so you can see whether you improved.
-- **Pass bar:** your set is picked first by a majority, or ties the strongest competitor;
-  no caption averages under 3.5 on any axis; no caption is flagged by 2+ personas.
+- **Pass bar:** your set is picked first on frames 1–2 by a majority of personas; every
+  caption averages 3.5+ on Clarity and Belief across all personas, and 3.5+ on Desire
+  among the personas it targets (a switcher frame isn't for the beginner); no caption is
+  flagged as unclear by 2+ personas.
+- **Don't take every suggestion.** Personas will ask for things the rules forbid (naming
+  competitors in screenshots) or that aren't built. Record what you declined and why.
 - Keep each round's JSON in `docs/marketing/panel-rounds/` so changes have reasons.
 
 ## Limits

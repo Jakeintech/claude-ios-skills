@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_BASE="$HOME/.claude/skills"
 CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 
-echo "=== claude-ios-skills installer (20 skills) ==="
+echo "=== claude-ios-skills installer (21 skills) ==="
 echo ""
 
 # Step 1: Symlink each skill individually
